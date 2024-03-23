@@ -4,10 +4,6 @@ import crud from '../conexiones/crud';
 import ViewTareas from './ViewTareas';
 
 const CargarTareas = () => {
-
-    //const navigate = useNavigate();
-
-    //const { idTarea } = useParams();
     const [tareas, setTareas] = useState([]);
 
     const cargarTareas = async () => {
@@ -15,10 +11,14 @@ const CargarTareas = () => {
         console.log(response);
         setTareas(response);
     }
-    //console.log(tareas);
+
     useEffect(() => {
         cargarTareas();
     }, []);
+
+    const handleDeleteTask = (idTarea) => {
+        setTareas(tareas.filter(tarea => tarea.id !== idTarea));
+    }
 
     return (
         <>
@@ -38,16 +38,17 @@ const CargarTareas = () => {
                             to={`/ver-empleados`}
                             className='bg-blue-500 w-full p-4 text-white uppercase font-bold mt-5 text-center rounded-lg mx-4'
                         >Ver Empleados</Link>
-                        { <Link
+                        <Link
                             to={`/ver-categorias`}
                             className='bg-blue-500 w-full p-4 text-white uppercase font-bold mt-5 text-center rounded-lg mx-4'
-                        >Tareas por categoria</Link>}
+                        >Tareas por categoria</Link>
                     </div>
                     <div className="bg-gray-600 shadow mt-10 rounded-lg">
-                        {tareas.map((tarea) =>
+                        {tareas && tareas.map((tarea) =>
                             <ViewTareas
                                 key={tarea.id}
                                 tarea={tarea}
+                                onTaskDelete={handleDeleteTask}
                             />
                         )}
                     </div>

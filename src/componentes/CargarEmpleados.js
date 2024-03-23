@@ -3,18 +3,44 @@ import { Link } from 'react-router-dom';
 import crud from '../conexiones/crud';
 import ViewEmpleados from './ViewEmpleados';
 
-const CargarEmpleados = () => {
+const ButtonLink = ({ to, children, className }) => (
+  <Link to={to} className={`bg-blue-500 w-full p-3 text-white uppercase font-bold mt-5 text-center rounded-lg mx-4 ${className}`}>
+    {children}
+  </Link>
+);
 
+const CargarEmpleados = () => {
   const [empleados, setEmpleados] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const cargarEmpleados = async () => {
-    const response = await crud.GET(`/empleados`);
-    //console.log(response);
-    setEmpleados(response);
+    try {
+      const response = await crud.GET(`/empleados`);
+      //setEmpleados(response.empleados); // con dto llega un object con array 
+      setEmpleados(response);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
   }
+
   useEffect(() => {
     cargarEmpleados();
   }, []);
+
+  const handleEmpleadoDeleted = (idEmpleado) => {
+    setEmpleados(empleados.filter(empleado => empleado.id !== idEmpleado));
+  }
+
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <>
@@ -26,31 +52,20 @@ const CargarEmpleados = () => {
             </h1>
           </div>
           <div className='p-12 flex'>
-            <Link
-              to={`/`}
-              className='bg-blue-500 w-full p-3 text-white uppercase font-bold mt-5 text-center rounded-lg mx-4'
-            >Crear Empleado</Link>
-            <Link
-              to={`/ver-tareas`}
-              className='bg-blue-500 w-full p-4 text-white uppercase font-bold mt-5 text-center rounded-lg mx-4'
-            >Ver Tareas</Link>
-            {/* <Link
-              to={`/ver-estados`}
-              className='bg-blue-500 w-full p-4 text-white uppercase font-bold mt-5 text-center rounded-lg mx-4'
-            >Ver Estados</Link> */}
+            <ButtonLink to={`/`}>Crear Empleado</ButtonLink>
+            <ButtonLink to={`/ver-tareas`}>Ver Tareas</ButtonLink>
           </div>
           <div className="bg-gray-600 shadow mt-10 rounded-lg">
             {empleados.map(empleado =>
               <ViewEmpleados
                 key={empleado.id}
                 empleado={empleado}
+                onEmpleadoDeleted={handleEmpleadoDeleted} // pasar a componente hijo para que pueda eliminar el empleado 
               />
             )}
           </div>
-
         </main>
       </div>
-
     </>
   );
 }
