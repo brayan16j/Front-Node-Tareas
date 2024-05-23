@@ -7,6 +7,7 @@ import CargarTareas from './componentes/CargarTareas';
 import ActualizarTarea from './componentes/ActualizarTarea';
 import Estado from './componentes/Estado';
 import ActualizarEstado from './componentes/ActualizarEstado';
+import ActualizarEmpleado from './componentes/ActualizarEmpleado';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Routes>
         <Route path="/" exact element={< CrearEmpleados/>} />
         <Route path="/ver-empleados" exact element={<CargarEmpleados />} />
+        <Route path="/Actualizar-empleado/:idEmpleado" exact element={<ActualizarEmpleado/>} />
         <Route path="/crear-tarea/:idEmpleado" exact element={<Tarea />} />
         <Route path="/ver-tareas" exact element={<CargarTareas />} />
         <Route path="/Actualizar-tareas/:idTarea" exact element={<ActualizarTarea />} />
