@@ -17,8 +17,12 @@ const CargarEmpleados = () => {
   const cargarEmpleados = async () => {
     try {
       const response = await crud.GET(`/empleados`);
+      const empleadosFormateados = response.map(empleado => ({
+        ...empleado,
+        salario: new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(empleado.salario)
+      }));
       //setEmpleados(response.empleados); // con dto llega un object con array 
-      setEmpleados(response);
+      setEmpleados(empleadosFormateados);
       setLoading(false);
     } catch (err) {
       setError(err.message);

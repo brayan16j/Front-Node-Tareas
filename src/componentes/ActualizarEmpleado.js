@@ -13,29 +13,63 @@ const ActualizarEmpleado = () => {
     salario: "",
   });
 
-  const cargarEmpleado = async () => {
-    const response = await crud.GET(`/empleados/${idEmpleado}`);
-    console.log(response);
-    setEmpleado(response);
+  const [salarioSinFormato, setSalarioSinFormato] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const cargarEmpleado = async (idEmpleado) => {
+    try {
+      const response = await crud.GET(`/empleados/${idEmpleado}`);
+      const empleadoFormateado = {
+        ...response,
+        salario: new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(response.salario)
+      };
+      setEmpleado(empleadoFormateado);
+      setSalarioSinFormato(response.salario * 100); // Guardar el valor sin formato
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
   };
+
   useEffect(() => {
-    cargarEmpleado();
-  }, []);
+    cargarEmpleado(idEmpleado);
+  }, [idEmpleado]);
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 2
+    }).format(value);
+  };
 
   const { nombre, fechaIngreso, salario } = empleado;
 
   const onChange = (e) => {
-    setEmpleado({
-      ...empleado,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    if (name === 'salario') {
+      const numericValue = value.replace(/\./g, '').replace(/,/g, '').replace(/[^0-9]/g, '');
+      setSalarioSinFormato(numericValue);
+      setEmpleado({
+        ...empleado,
+        [name]: formatCurrency(numericValue / 100)
+      });
+    } else {
+      setEmpleado({
+        ...empleado,
+        [name]: value
+      });
+    }
   };
 
   const actualizarEmpleado = async () => {
     const data = {
       nombre: empleado.nombre,
       fechaIngreso: empleado.fechaIngreso,
-      salario: empleado.salario,
+      salario: parseFloat(salarioSinFormato) / 100
     };
     const response = await crud.PUT(`/empleados/${idEmpleado}`, data);
     console.log(" Actualizar empleado ---> ", response);
@@ -53,6 +87,15 @@ const ActualizarEmpleado = () => {
     e.preventDefault();
     actualizarEmpleado();
   };
+
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <>
       <main className="container mx-auto mt-5 md:mt-20 p-5 md:flex md:justify-center">
@@ -95,13 +138,14 @@ const ActualizarEmpleado = () => {
                 Salario
               </label>
               <input
-                type="number"
+                type="text"
                 id="salario"
                 name="salario"
                 placeholder="salario"
                 className="w-full mt-3 p-3 border rounded-lg bg-gray-50"
                 value={salario}
                 onChange={onChange}
+                pattern="^\$\s?\d{1,3}(\.\d{3})*(,\d{2})?$"
               />
             </div>
 
